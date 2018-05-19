@@ -5,11 +5,42 @@ module.exports = {
   messages: {
     // a function which produces all the messages
     get: function () {
+      // select user.username, room.roomname, messages.message,messages.created_At from messages inner join room on room.id = messages.room_id inner join user on user.id = messages.user_id order by messages.created_At desc;
+      return db.dbConnection.query('select user.username, room.roomname, messages.message,messages.created_At from messages inner join room on room.id = messages.room_id inner join user on user.id = messages.user_id order by messages.created_At desc')
+        .then(row => {
+        // console.log('row', JSON.parse(JSON.stringify(row)));
+          return JSON.parse(JSON.stringify(row));
+        });
       
+      /*
+[ { username: 'Ryan',
+    roomname: 'bar',
+    message: 'In mercy\'s name, three days is all I need.',
+    created_At: '2018-05-19T19:23:34.000Z' },
+  { username: 'Ryan',
+    roomname: 'bar',
+    message: 'In mercy\'s name, three days is all I need.',
+    created_At: '2018-05-19T19:23:04.000Z' },
+  { username: 'Ryan',
+    roomname: 'bar',
+    message: 'In mercy\'s name, three days is all I need.',
+    created_At: '2018-05-19T19:20:13.000Z' },
+  { username: 'Ryan',
+    roomname: 'foo',
+    message: 'In mercy\'s name, three days is all I need.',
+    created_At: '2018-05-19T19:19:33.000Z' },
+  { username: 'Mary',
+    roomname: 'foo',
+    message: 'In mercy\'s name, three days is all I need.',
+    created_At: '2018-05-19T19:18:01.000Z' },
+  { username: 'undefined',
+    roomname: 'foo',
+    message: 'test',
+    created_At: '2018-05-19T18:54:40.000Z' } ]     
+      */
     },
     // a function which can be used to insert a message into the database
     post: function (data) {
-      console.log(data);
       /*
       { username: 'Valjean',
         message: 'In mercy\'s name, three days is all I need.',
@@ -21,10 +52,8 @@ module.exports = {
       }
       // username = underscore.escape(username);
       
-      console.log(data.message);
       let message = data.message;
       // don't need to check message since it could be empty
-      console.log(message);
       
       let roomname = data.roomname;
       if (!roomname) {
@@ -43,12 +72,10 @@ module.exports = {
             // need to add user & retrieve their id
               return db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`).then(result => {
                 userId = JSON.parse(JSON.stringify(result)).insertId;
-                console.log('userId in INSERT', userId);
                 return userId;
               });
             }
             userId = JSON.parse(JSON.stringify(row))[0].id;
-            console.log('userId in SELECT', userId);
             return userId;
           })
       );
@@ -66,21 +93,17 @@ module.exports = {
             // need to add user & retrieve their id
               return db.dbConnection.query(`INSERT INTO room (roomname) VALUES('${roomname}')`).then(result => {
                 roomId = JSON.parse(JSON.stringify(result)).insertId;
-                console.log('roomId in INSERT', roomId);
                 return roomId;
               });
             }
             roomId = JSON.parse(JSON.stringify(row))[0].id;
-            console.log('roomId in SELECT', roomId);
             return roomId;
           })
       );
       
       return Promise.all([getUserIdPromise, roomIdPromise]).then(function(allIds) {
-        console.log('userId ' + allIds[0] + ' roomId ' + allIds[1]);
         var userId = allIds[0];
         var roomId = allIds[1];
-        console.log(message);
         db.dbConnection.query(`INSERT INTO messages (user_id, room_id, message) 
           VALUES('${userId}','${roomId}','${message}')`);
       });
@@ -95,7 +118,6 @@ module.exports = {
       
       return db.dbConnection.query(`select user.username from user where username = '${data.username}'`)
         .then(row => {
-          console.log('row', JSON.stringify(row));        
           if (row.length === 0) {
             return db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`);        
           }

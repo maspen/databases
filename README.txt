@@ -12,6 +12,9 @@ login
 mysql -u student -p
 - pass: student
 
+fixing 'lint' issues:
+eslint * --fix
+
 show databases;
 
 create database db;
