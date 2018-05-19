@@ -11,23 +11,12 @@ dbConnection = mysql.createConnection({
       database: 'chat'
     });
     dbConnection.connect();
-
 */
 
 class Database {
   constructor(config) {
     this.connection = mysql.createConnection(config);
   }
-  // connect(){
-  //   return new Promise((resolve, reject) => {
-  //     this.connection.connect(err) =>{
-  //       if (err) {
-  //         return reject(err);
-  //       }
-  //       resolve ();
-  //     }
-  //   })
-  // }
   
   query(sql, args) {
     return new Promise((resolve, reject) => {
@@ -49,7 +38,6 @@ class Database {
     });
   }
 }
-
 
 var dbConnection = new Database({
   user: 'student',

@@ -12,36 +12,24 @@ module.exports = {
           return JSON.parse(JSON.stringify(row));
         });
       
-      /*
-[ { username: 'Ryan',
-    roomname: 'bar',
-    message: 'In mercy\'s name, three days is all I need.',
-    created_At: '2018-05-19T19:23:34.000Z' },
-  { username: 'Ryan',
-    roomname: 'bar',
-    message: 'In mercy\'s name, three days is all I need.',
-    created_At: '2018-05-19T19:23:04.000Z' },
-  { username: 'Ryan',
-    roomname: 'bar',
-    message: 'In mercy\'s name, three days is all I need.',
-    created_At: '2018-05-19T19:20:13.000Z' },
-  { username: 'Ryan',
-    roomname: 'foo',
-    message: 'In mercy\'s name, three days is all I need.',
-    created_At: '2018-05-19T19:19:33.000Z' },
-  { username: 'Mary',
-    roomname: 'foo',
-    message: 'In mercy\'s name, three days is all I need.',
-    created_At: '2018-05-19T19:18:01.000Z' },
-  { username: 'undefined',
-    roomname: 'foo',
-    message: 'test',
-    created_At: '2018-05-19T18:54:40.000Z' } ]     
+      /* sql result via JSON parse/stringify
+      [ { username: 'Ryan',
+          roomname: 'bar',
+          message: 'In mercy\'s name, three days is all I need.',
+          created_At: '2018-05-19T19:23:34.000Z' },
+        { username: 'Ryan',
+          roomname: 'bar',
+          message: 'In mercy\'s name, three days is all I need.',
+          created_At: '2018-05-19T19:23:04.000Z' },
+        { username: 'Ryan',
+          roomname: 'bar',
+          message: 'In mercy\'s name, three days is all I need.',
+          created_At: '2018-05-19T19:20:13.000Z' }, ... ]     
       */
     },
     // a function which can be used to insert a message into the database
     post: function (data) {
-      /*
+      /* message format on client side
       { username: 'Valjean',
         message: 'In mercy\'s name, three days is all I need.',
         roomname: 'Hello' }
@@ -49,8 +37,8 @@ module.exports = {
       let username = data.username;
       if (!username) {
         // return error - username not provided
+        return Promise.reject(new Error('username was not provided'));
       }
-      // username = underscore.escape(username);
       
       let message = data.message;
       // don't need to check message since it could be empty
@@ -58,8 +46,8 @@ module.exports = {
       let roomname = data.roomname;
       if (!roomname) {
         // return error - room name not provided
+        return Promise.reject(new Error('roomname was not provided'));
       }
-      // roomname = underscore.escape(roomname);
     
       // check if username exists
       //  yes - get id -- row stringified = [{"username":"ValjeanA"}]
@@ -87,11 +75,11 @@ module.exports = {
       // insert into room (roomname) value ('test');
       var roomId;
       var roomIdPromise = Promise.resolve(
-        db.dbConnection.query(`select room.id from room where roomname = '${roomname}'`)
+        db.dbConnection.query(`select room.id from room where roomname = "${roomname}"`)
           .then(row => {
             if (row.length === 0) {
             // need to add user & retrieve their id
-              return db.dbConnection.query(`INSERT INTO room (roomname) VALUES('${roomname}')`).then(result => {
+              return db.dbConnection.query(`INSERT INTO room (roomname) VALUES("${roomname}")`).then(result => {
                 roomId = JSON.parse(JSON.stringify(result)).insertId;
                 return roomId;
               });
@@ -105,14 +93,15 @@ module.exports = {
         var userId = allIds[0];
         var roomId = allIds[1];
         db.dbConnection.query(`INSERT INTO messages (user_id, room_id, message) 
-          VALUES('${userId}','${roomId}','${message}')`);
+          VALUES("${userId}","${roomId}","${message}")`);
       });
     }
   },
 
   users: {
     get: function () {
-      
+      return db.dbConnection.query('select user.username from user')
+        .then(row => JSON.parse(JSON.stringify(row)));
     },
     post: function (data) {
       
