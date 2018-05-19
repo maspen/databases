@@ -2,32 +2,37 @@ var models = require('../models');
 
 module.exports = {
   messages: {
+    // a function which handles a get request for all messages
     get: function (req, res) {
-
+      
       res.send('got messages GET');
-    }, // a function which handles a get request for all messages
+    },
+    // a function which handles posting a message to the database
     post: function (req, res) {
-
-    res.send('got messages POST');
-    } // a function which handles posting a message to the database
+      models.messages.post(req.body).then(() => { res.send('message added'); } );
+    }
   },
 
   users: {
     // Ditto as above
     get: function (req, res) {
 
-    res.send('got users GET');
+      res.send('got users GET');
     },
     post: function (req, res) {
-console.log('--------------- controller/users/POST request', req.body);
-    /*
-      extract body of request
-      use models to INSERT user into tabl
-    */
+      models.users.post(req.body).then(dbResult => {
+        console.log('dbResult', JSON.stringify(dbResult));
+        // INSERT user response from db: {"fieldCount":0,"affectedRows":1,"insertId":5,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}   
+        res.statusCode = 302; 
 
-    models.users.post(req.body);
-
-    res.send('got users POST');
+        if (dbResult) {
+          // NEW user was added
+          res.send('user added');
+        } else {
+          // user exists
+          res.send('user already exists');
+        }
+      });
     }
   }
 };

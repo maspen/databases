@@ -1,77 +1,105 @@
 var db = require('../db');
+var underscore = require('underscore');
 
 module.exports = {
   messages: {
-    get: function () {}, // a function which produces all the messages
-    post: function () {} // a function which can be used to insert a message into the database
+    // a function which produces all the messages
+    get: function () {
+      
+    },
+    // a function which can be used to insert a message into the database
+    post: function (data) {
+      console.log(data);
+      /*
+      { username: 'Valjean',
+        message: 'In mercy\'s name, three days is all I need.',
+        roomname: 'Hello' }
+      */
+      let username = data.username;
+      if (!username) {
+        // return error - username not provided
+      }
+      // username = underscore.escape(username);
+      
+      console.log(data.message);
+      let message = data.message;
+      // don't need to check message since it could be empty
+      console.log(message);
+      
+      let roomname = data.roomname;
+      if (!roomname) {
+        // return error - room name not provided
+      }
+      // roomname = underscore.escape(roomname);
+    
+      // check if username exists
+      //  yes - get id -- row stringified = [{"username":"ValjeanA"}]
+      //  no - insert & get id
+      var userId;
+      var getUserIdPromise = Promise.resolve(
+        db.dbConnection.query(`select user.id from user where username = '${username}'`)
+          .then(row => {
+            if (row.length === 0) {
+            // need to add user & retrieve their id
+              return db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`).then(result => {
+                userId = JSON.parse(JSON.stringify(result)).insertId;
+                console.log('userId in INSERT', userId);
+                return userId;
+              });
+            }
+            userId = JSON.parse(JSON.stringify(row))[0].id;
+            console.log('userId in SELECT', userId);
+            return userId;
+          })
+      );
+      
+      // check if room exists
+      //  yes - get id
+      // select room.id from room where roomname = 'test';
+      //  no - insert & get id
+      // insert into room (roomname) value ('test');
+      var roomId;
+      var roomIdPromise = Promise.resolve(
+        db.dbConnection.query(`select room.id from room where roomname = '${roomname}'`)
+          .then(row => {
+            if (row.length === 0) {
+            // need to add user & retrieve their id
+              return db.dbConnection.query(`INSERT INTO room (roomname) VALUES('${roomname}')`).then(result => {
+                roomId = JSON.parse(JSON.stringify(result)).insertId;
+                console.log('roomId in INSERT', roomId);
+                return roomId;
+              });
+            }
+            roomId = JSON.parse(JSON.stringify(row))[0].id;
+            console.log('roomId in SELECT', roomId);
+            return roomId;
+          })
+      );
+      
+      return Promise.all([getUserIdPromise, roomIdPromise]).then(function(allIds) {
+        console.log('userId ' + allIds[0] + ' roomId ' + allIds[1]);
+        var userId = allIds[0];
+        var roomId = allIds[1];
+        console.log(message);
+        db.dbConnection.query(`INSERT INTO messages (user_id, room_id, message) 
+          VALUES('${userId}','${roomId}','${message}')`);
+      });
+    }
   },
 
   users: {
-    get: function () {},
+    get: function () {
+      
+    },
     post: function (data) {
       
-      // db.dbConnection.connect()
-      db.dbConnection.query(`select user.username from user where username = '${data.username}'`)
-      .then(row => {
-        if (row.length === 0) {
-          return db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`);
-        }
-      })
-      
-      
-      
-      
-      
-      
-      
-      
-//       db.dbConnection.connect();
-// // console.log('----------- models/post/data', data);
-
-// //       // need to check if user is already in 'users' table
-// //       db.dbConnection.query(`select user.username from user where username = '${data.username}'`, function (err, rows, fields) {
-// //         if(err) console.log('err', err);
-// //         if(rows) { console.log('rows', rows);
-// //           // rows [ RowDataPacket { username: 'matt' } ] // matt exists
-// //           // rows [] // for non existant
-// //           if (rows.length === 0) {
-// //             db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`, function (err, rows, fields) {
-// //               if (err) throw err
-
-// //               console.log(`inserted ${data.username} into table user`);
-// //               // db.dbConnection.end();
-// //             });
-// //           }
-// //         }
-// //       });
-
-//       var query = db.dbConnection.query(`select user.username from user where username = '${data.username}'`);
-//       query
-//       .on('error', function(err) {
-//         // Handle error, an 'end' event will be emitted after this as well
-//       })
-//       .on('fields', function(fields) {
-//         // the field packets for the rows to follow
-//       })
-//       .on('result', function(row) {
-//         // Pausing the connnection is useful if your processing involves I/O
-//         db.dbConnection.pause();
-     
-//         // var processRow (row, function() {
-//           if(row.length === 0) {
-//             db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`, function (err, rows, fields) {
-//               if (err) throw err
-
-//               console.log(`inserted ${data.username} into table user`);
-//               db.dbConnection.resume();
-//             });
-//           }
-//         // });
-//       })
-//       .on('end', function() {
-//         // all rows have been received
-//         db.dbConnection.end();
-//       });
+      return db.dbConnection.query(`select user.username from user where username = '${data.username}'`)
+        .then(row => {
+          console.log('row', JSON.stringify(row));        
+          if (row.length === 0) {
+            return db.dbConnection.query(`INSERT INTO user (username) VALUES('${data.username}')`);        
+          }
+        });
     }
   }
 };

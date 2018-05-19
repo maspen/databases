@@ -4,6 +4,9 @@ npm install -g nodemon
 run (root level)
 nodemon ./server/app.js
 
+need underscore for escaping message text (eg 's);
+npm install --save underscore
+
 login
 
 mysql -u student -p
@@ -114,11 +117,13 @@ ALTER TABLE `messages` ADD FOREIGN KEY (room_id) REFERENCES `room` (`id`);
 
 * message
 
-var message = {
-  username: 'Mel Brooks',
-  text: 'It\'s good to be the king',
-  roomname: 'lobby'
-};
+method: 'POST',
+        uri: 'http://127.0.0.1:3000/classes/messages',
+        json: {
+          "username": "Valjean",
+          "message": "In mercy's name, three days is all I need.",
+          "roomname": "Hello"
+        }
 
 * room
 
@@ -126,4 +131,15 @@ var message = {
 
 
 * loading sql file to running mysql:
-shell> mysql < batch-file
+shell> mysql < server/schema.sql;
+
+* postman
+- post to user -- adding a new user
+POST
+localhost:3000/classes/users
+application/json
+{ "username": "Valjean" }
+
+
+
+
