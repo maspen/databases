@@ -19,6 +19,13 @@ module.exports = {
     res.send('got users GET');
     },
     post: function (req, res) {
+console.log('--------------- controller/users/POST request', req.body);
+    /*
+      extract body of request
+      use models to INSERT user into tabl
+    */
+
+    models.users.post(req.body);
 
     res.send('got users POST');
     }
