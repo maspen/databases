@@ -1,10 +1,20 @@
 var models = require('../models');
 
+var headers = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10, // Seconds.
+};
+
 module.exports = {
   messages: {
     // a function which handles a get request for all messages
     get: function (req, res) {
+      console.log('server/controller/messages/GET req');        
       models.messages.get().then((data) => {
+        console.log('----------- data', data);
+        res.set(headers);        
         res.statusCode = 200;
         res.send(data); 
       });

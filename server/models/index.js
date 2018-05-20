@@ -4,7 +4,7 @@ var underscore = require('underscore');
 module.exports = {
   messages: {
     // a function which produces all the messages
-    get: function () {
+    get: function () {    
       // select user.username, room.roomname, messages.message,messages.created_At from messages inner join room on room.id = messages.room_id inner join user on user.id = messages.user_id order by messages.created_At desc;
       return db.dbConnection.query('select user.username, room.roomname, messages.message,messages.created_At from messages inner join room on room.id = messages.room_id inner join user on user.id = messages.user_id order by messages.created_At desc')
         .then(row => {

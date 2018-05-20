@@ -143,6 +143,7 @@ localhost:3000/classes/users
 application/json
 { "username": "Valjean" }
 
+* client
 
-
+bower install
 
